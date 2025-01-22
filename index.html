@@ -17,14 +17,9 @@
 <body>
     <div class="container">
         <h2>Tow Truck Charge Calculator</h2>
-        
-        <label for="pickupAddress">Pickup Address:</label>
-        <input type="text" id="pickupAddress" placeholder="Enter pickup location">
 
-        <label for="dropoffAddress">Drop-off Address:</label>
-        <input type="text" id="dropoffAddress" placeholder="Enter drop-off location">
-
-        <div id="mileageDisplay">Miles towed: 0</div>
+        <label for="mileage">Miles Towed:</label>
+        <input type="number" id="mileage" value="10" placeholder="Enter miles towed">
 
         <label for="baseFee">Base Hook-up Fee ($):</label>
         <input type="number" id="baseFee" value="75">
@@ -51,51 +46,9 @@
     </div>
 
     <script>
-        let distanceService;
-        
-        function initializeAutocomplete() {
-            let pickupInput = document.getElementById("pickupAddress");
-            let dropoffInput = document.getElementById("dropoffAddress");
-
-            new google.maps.places.Autocomplete(pickupInput);
-            new google.maps.places.Autocomplete(dropoffInput);
-
-            distanceService = new google.maps.DistanceMatrixService();
-
-            dropoffInput.addEventListener("change", calculateMiles);
-        }
-
-        function calculateMiles() {
-            let pickup = document.getElementById("pickupAddress").value;
-            let dropoff = document.getElementById("dropoffAddress").value;
-            let mileageDisplay = document.getElementById("mileageDisplay");
-
-            if (pickup && dropoff) {
-                distanceService.getDistanceMatrix({
-                    origins: [pickup],
-                    destinations: [dropoff],
-                    travelMode: 'DRIVING',
-                }, function(response, status) {
-                    if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
-                        let distanceText = response.rows[0].elements[0].distance.text;
-                        let miles = parseFloat(distanceText.replace(/[^\d.]/g, "")); // Extract number from string
-                        if (!isNaN(miles)) {
-                            mileageDisplay.innerText = `Miles Towed: ${miles.toFixed(1)} miles`;
-                        } else {
-                            mileageDisplay.innerText = "Miles Towed: 0";
-                            console.warn("Distance response invalid");
-                        }
-                    } else {
-                        console.error("Error calculating distance:", status, response);
-                        mileageDisplay.innerText = "Miles Towed: 0";
-                    }
-                });
-            }
-        }
-
         function calculateCharge() {
             let baseFee = parseFloat(document.getElementById('baseFee').value) || 0;
-            let mileage = parseFloat(document.getElementById('mileageDisplay').innerText.replace(/[^\d.]/g, "")) || 0;
+            let mileage = parseFloat(document.getElementById('mileage').value) || 0;
             let ratePerMile = parseFloat(document.getElementById('ratePerMile').value) || 0;
             let afterHours = parseFloat(document.getElementById('afterHours').value) || 0;
             let winching = parseFloat(document.getElementById('winching').value) || 0;
@@ -113,7 +66,5 @@
             document.getElementById('result').innerText = `Total Charge: $${totalCost.toFixed(2)}`;
         }
     </script>
-
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3jbPFpYYeXJnAtI5zuC1oVEHwzyq12n8&libraries=places" async defer onload="initializeAutocomplete()"></script>
 </body>
 </html>
