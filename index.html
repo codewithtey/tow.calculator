@@ -39,6 +39,9 @@
         <label for="winching">Winching/Recovery Fee ($):</label>
         <input type="number" id="winching" value="0">
 
+        <label for="additionalService">Additional Service Charge ($20 Fixed):</label>
+        <input type="number" id="additionalService" value="20" readonly>
+
         <button onclick="calculateCharge()">Calculate</button>
 
         <div id="result"></div>
@@ -46,6 +49,7 @@
 
     <script>
         let distanceService;
+
         function initializeAutocomplete() {
             let pickupInput = document.getElementById("pickupAddress");
             let dropoffInput = document.getElementById("dropoffAddress");
@@ -55,9 +59,7 @@
 
             distanceService = new google.maps.DistanceMatrixService();
 
-            // Trigger calculation when the user selects an address
-            dropoffInput.addEventListener("change", calculateMiles);
-            dropoffInput.addEventListener("blur", calculateMiles); // In case user doesn't hit Enter
+            document.getElementById("dropoffAddress").addEventListener("blur", calculateMiles);
         }
 
         function calculateMiles() {
@@ -73,16 +75,14 @@
                 }, function(response, status) {
                     if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
                         let distanceText = response.rows[0].elements[0].distance.text;
-                        let miles = parseFloat(distanceText.replace(/[^\d.]/g, "")); // Extract number from text
+                        let miles = parseFloat(distanceText.replace(/[^\d.]/g, "")); 
                         if (!isNaN(miles)) {
                             mileageField.value = miles.toFixed(1);
-                            console.log(`Distance Calculated: ${miles.toFixed(1)} miles`);
                         } else {
                             mileageField.value = "0";
-                            console.warn("Distance response invalid");
                         }
                     } else {
-                        console.error("Error calculating distance:", status, response);
+                        console.error("Distance calculation error:", status, response);
                         mileageField.value = "0";
                     }
                 });
@@ -90,18 +90,16 @@
         }
 
         function calculateCharge() {
-            calculateMiles(); // Ensure miles are updated before calculating charge
+            let baseFee = parseFloat(document.getElementById('baseFee').value) || 0;
+            let mileage = parseFloat(document.getElementById('mileage').value) || 0;
+            let ratePerMile = parseFloat(document.getElementById('ratePerMile').value) || 0;
+            let afterHours = parseFloat(document.getElementById('afterHours').value) || 0;
+            let winching = parseFloat(document.getElementById('winching').value) || 0;
+            let additionalService = parseFloat(document.getElementById('additionalService').value) || 0;
 
-            setTimeout(() => { // Delay to ensure miles field is updated
-                let baseFee = parseFloat(document.getElementById('baseFee').value) || 0;
-                let mileage = parseFloat(document.getElementById('mileage').value) || 0;
-                let ratePerMile = parseFloat(document.getElementById('ratePerMile').value) || 0;
-                let afterHours = parseFloat(document.getElementById('afterHours').value) || 0;
-                let winching = parseFloat(document.getElementById('winching').value) || 0;
+            let totalCost = baseFee + (mileage * ratePerMile) + afterHours + winching + additionalService;
 
-                let totalCost = baseFee + (mileage * ratePerMile) + afterHours + winching;
-                document.getElementById('result').innerText = `Total Charge: $${totalCost.toFixed(2)}`;
-            }, 1000); // Give it 1 second to ensure API returns distance
+            document.getElementById('result').innerText = `Total Charge: $${totalCost.toFixed(2)}`;
         }
     </script>
 
