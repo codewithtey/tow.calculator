@@ -4,29 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tow Truck Charge Calculator</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3jbPFpYYeXJnAtI5zuC1oVEHwzyq12n8&libraries=places"></script> <!-- Replace YOUR_GOOGLE_MAPS_API_KEY with your actual key -->
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; margin: 0; background-color: #f4f4f4; }
-        .container { max-width: 420px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
-        h2, h3 { text-align: center; }
-        label { font-weight: bold; margin-top: 10px; display: block; }
-        input[type="number"] { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; }
-        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; font-size: 16px; margin-top: 15px; border-radius: 5px; }
-        button:hover { background: #0056b3; }
-        #result { margin-top: 20px; font-weight: bold; text-align: center; font-size: 18px; color: #333; }
-        .checkbox-container { margin-top: 10px; }
-        .checkbox-container label { font-weight: normal; display: flex; align-items: center; cursor: pointer; }
-        .checkbox-container input { margin-right: 10px; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f8f9fa; 
+            margin: 0; 
+            padding: 20px;
+        }
+        .container { 
+            max-width: 450px; 
+            background: white; 
+            margin: auto; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); 
+        }
+        h2, h3 { 
+            text-align: center; 
+            color: #333; 
+        }
+        label { 
+            font-weight: bold; 
+            display: block; 
+            margin-top: 10px; 
+        }
+        input[type="number"], button, input[type="text"] { 
+            width: 100%; 
+            padding: 10px; 
+            margin-top: 5px; 
+            border-radius: 5px; 
+            border: 1px solid #ccc; 
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            font-size: 16px; 
+            border: none; 
+            cursor: pointer; 
+            margin-top: 15px; 
+        }
+        button:hover { 
+            background: #0056b3; 
+        }
+        .checkbox-group {
+            margin-top: 10px;
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            padding: 5px 0;
+            font-weight: normal;
+        }
+        .checkbox-group input {
+            margin-right: 10px;
+        }
+        #result { 
+            text-align: center; 
+            font-size: 18px; 
+            font-weight: bold; 
+            margin-top: 20px; 
+            color: #333; 
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Tow Truck Charge Calculator</h2>
 
+        <label for="startingPoint">Starting Point (Address):</label>
+        <input type="text" id="startingPoint" placeholder="Enter starting location">
+
+        <label for="destination">Destination (Address):</label>
+        <input type="text" id="destination" placeholder="Enter destination location">
+
         <label for="baseFee">Base Hook-up Fee ($):</label>
         <input type="number" id="baseFee" value="75" min="0">
-
-        <label for="mileage">Miles Towed:</label>
-        <input type="number" id="mileage" value="10" min="0">
 
         <label for="ratePerMile">Rate per Mile ($):</label>
         <input type="number" id="ratePerMile" value="5" min="0">
@@ -37,8 +93,8 @@
         <label for="winching">Winching/Recovery Fee ($):</label>
         <input type="number" id="winching" value="0" min="0">
 
-        <h3>Additional Services (Each +$20.00)</h3>
-        <div class="checkbox-container">
+        <h3>Additional Services (+$20 each)</h3>
+        <div class="checkbox-group">
             <label><input type="checkbox" id="missingWheels"> My Vehicle is Missing Wheel(s)</label>
             <label><input type="checkbox" id="brokenBallJoint"> My Vehicle has a Broken Ball Joint</label>
             <label><input type="checkbox" id="brokenTireRod"> My Vehicle has a Broken Tire Rod</label>
@@ -54,21 +110,42 @@
     <script>
         function calculateCharge() {
             let baseFee = parseFloat(document.getElementById('baseFee').value) || 0;
-            let mileage = parseFloat(document.getElementById('mileage').value) || 0;
             let ratePerMile = parseFloat(document.getElementById('ratePerMile').value) || 0;
             let afterHours = parseFloat(document.getElementById('afterHours').value) || 0;
             let winching = parseFloat(document.getElementById('winching').value) || 0;
 
-            // Additional services, each +$20 charge
+            // Additional services charge ($20 each)
             let additionalServices = 0;
-            let additionalCheckboxes = ['missingWheels', 'brokenBallJoint', 'brokenTireRod', 'stuckInPark', 'noKeys'];
-            additionalCheckboxes.forEach(id => {
+            let serviceIds = ['missingWheels', 'brokenBallJoint', 'brokenTireRod', 'stuckInPark', 'noKeys'];
+            serviceIds.forEach(id => {
                 if (document.getElementById(id).checked) additionalServices += 20;
             });
 
-            // Calculate total cost
-            let totalCost = baseFee + (mileage * ratePerMile) + afterHours + winching + additionalServices;
-            document.getElementById('result').innerText = `Total Charge: $${totalCost.toFixed(2)}`;
+            let startingPoint = document.getElementById('startingPoint').value;
+            let destination = document.getElementById('destination').value;
+
+            if (!startingPoint || !destination) {
+                alert("Please enter both starting point and destination.");
+                return;
+            }
+
+            // Use Google Maps API to calculate distance
+            let directionsService = new google.maps.DirectionsService();
+            let request = {
+                origin: startingPoint,
+                destination: destination,
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+
+            directionsService.route(request, function(result, status) {
+                if (status === google.maps.DirectionsStatus.OK) {
+                    let distanceInMiles = result.routes[0].legs[0].distance.value / 1609.34; // Convert meters to miles
+                    let totalCost = baseFee + (distanceInMiles * ratePerMile) + afterHours + winching + additionalServices;
+                    document.getElementById('result').innerText = `Total Charge: $${totalCost.toFixed(2)} (Distance: ${distanceInMiles.toFixed(2)} miles)`;
+                } else {
+                    alert("Could not calculate the route. Please check the entered addresses.");
+                }
+            });
         }
     </script>
 </body>
