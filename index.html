@@ -4,103 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tow Truck Charge Calculator</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3jbPFpYYeXJnAtI5zuC1oVEHwzyq12n8&libraries=places"></script> <!-- Replace YOUR_GOOGLE_MAPS_API_KEY with your actual key -->
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background-color: #f8f9fa; 
-            margin: 0; 
-            padding: 20px;
-        }
-        .container { 
-            max-width: 450px; 
-            background: white; 
-            margin: auto; 
-            padding: 20px; 
-            border-radius: 10px; 
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); 
-        }
-        h2, h3 { 
-            text-align: center; 
-            color: #333; 
-        }
-        label { 
-            font-weight: bold; 
-            display: block; 
-            margin-top: 10px; 
-        }
-        input[type="number"], button, input[type="text"] { 
-            width: 100%; 
-            padding: 10px; 
-            margin-top: 5px; 
-            border-radius: 5px; 
-            border: 1px solid #ccc; 
-        }
-        button { 
-            background: #007bff; 
-            color: white; 
-            font-size: 16px; 
-            border: none; 
-            cursor: pointer; 
-            margin-top: 15px; 
-        }
-        button:hover { 
-            background: #0056b3; 
-        }
-        .checkbox-group {
-            margin-top: 10px;
-            background: #f1f1f1;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .checkbox-group label {
-            display: flex;
-            align-items: center;
-            padding: 5px 0;
-            font-weight: normal;
-        }
-        .checkbox-group input {
-            margin-right: 10px;
-        }
-        #result { 
-            text-align: center; 
-            font-size: 18px; 
-            font-weight: bold; 
-            margin-top: 20px; 
-            color: #333; 
-        }
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 400px; margin: auto; }
+        label, input { display: block; width: 100%; margin-bottom: 10px; }
+        button { padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #result { margin-top: 20px; font-weight: bold; }
+        #mileageDisplay { font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Tow Truck Charge Calculator</h2>
+        
+        <label for="pickupAddress">Pickup Address:</label>
+        <input type="text" id="pickupAddress" placeholder="Enter pickup location">
 
-        <label for="startingPoint">Starting Point (Address):</label>
-        <input type="text" id="startingPoint" placeholder="Enter starting location">
+        <label for="dropoffAddress">Drop-off Address:</label>
+        <input type="text" id="dropoffAddress" placeholder="Enter drop-off location">
 
-        <label for="destination">Destination (Address):</label>
-        <input type="text" id="destination" placeholder="Enter destination location">
+        <div id="mileageDisplay">Miles towed: 0</div>
 
         <label for="baseFee">Base Hook-up Fee ($):</label>
-        <input type="number" id="baseFee" value="75" min="0">
+        <input type="number" id="baseFee" value="75">
 
         <label for="ratePerMile">Rate per Mile ($):</label>
-        <input type="number" id="ratePerMile" value="5" min="0">
+        <input type="number" id="ratePerMile" value="5">
 
         <label for="afterHours">After-Hours Fee ($):</label>
-        <input type="number" id="afterHours" value="0" min="0">
+        <input type="number" id="afterHours" value="0">
 
         <label for="winching">Winching/Recovery Fee ($):</label>
-        <input type="number" id="winching" value="0" min="0">
+        <input type="number" id="winching" value="0">
 
-        <h3>Additional Services (+$20 each)</h3>
-        <div class="checkbox-group">
-            <label><input type="checkbox" id="missingWheels"> My Vehicle is Missing Wheel(s)</label>
-            <label><input type="checkbox" id="brokenBallJoint"> My Vehicle has a Broken Ball Joint</label>
-            <label><input type="checkbox" id="brokenTireRod"> My Vehicle has a Broken Tire Rod</label>
-            <label><input type="checkbox" id="stuckInPark"> My Vehicle is Stuck in Park</label>
-            <label><input type="checkbox" id="noKeys"> I have No Keys with Vehicle</label>
-        </div>
+        <h3>Additional Services (Each +$20.00)</h3>
+        <label><input type="checkbox" id="missingWheels"> My Vehicle is Missing Wheel(s)</label>
+        <label><input type="checkbox" id="brokenBallJoint"> My Vehicle has a Broken Ball Joint</label>
+        <label><input type="checkbox" id="brokenTireRod"> My Vehicle has a Broken Tire Rod</label>
+        <label><input type="checkbox" id="stuckInPark"> My Vehicle is Stuck in Park</label>
+        <label><input type="checkbox" id="noKeys"> I have No Keys with Vehicle</label>
 
         <button onclick="calculateCharge()">Calculate</button>
 
@@ -108,45 +51,69 @@
     </div>
 
     <script>
+        let distanceService;
+        
+        function initializeAutocomplete() {
+            let pickupInput = document.getElementById("pickupAddress");
+            let dropoffInput = document.getElementById("dropoffAddress");
+
+            new google.maps.places.Autocomplete(pickupInput);
+            new google.maps.places.Autocomplete(dropoffInput);
+
+            distanceService = new google.maps.DistanceMatrixService();
+
+            dropoffInput.addEventListener("change", calculateMiles);
+        }
+
+        function calculateMiles() {
+            let pickup = document.getElementById("pickupAddress").value;
+            let dropoff = document.getElementById("dropoffAddress").value;
+            let mileageDisplay = document.getElementById("mileageDisplay");
+
+            if (pickup && dropoff) {
+                distanceService.getDistanceMatrix({
+                    origins: [pickup],
+                    destinations: [dropoff],
+                    travelMode: 'DRIVING',
+                }, function(response, status) {
+                    if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
+                        let distanceText = response.rows[0].elements[0].distance.text;
+                        let miles = parseFloat(distanceText.replace(/[^\d.]/g, "")); // Extract number from string
+                        if (!isNaN(miles)) {
+                            mileageDisplay.innerText = `Miles Towed: ${miles.toFixed(1)} miles`;
+                        } else {
+                            mileageDisplay.innerText = "Miles Towed: 0";
+                            console.warn("Distance response invalid");
+                        }
+                    } else {
+                        console.error("Error calculating distance:", status, response);
+                        mileageDisplay.innerText = "Miles Towed: 0";
+                    }
+                });
+            }
+        }
+
         function calculateCharge() {
             let baseFee = parseFloat(document.getElementById('baseFee').value) || 0;
+            let mileage = parseFloat(document.getElementById('mileageDisplay').innerText.replace(/[^\d.]/g, "")) || 0;
             let ratePerMile = parseFloat(document.getElementById('ratePerMile').value) || 0;
             let afterHours = parseFloat(document.getElementById('afterHours').value) || 0;
             let winching = parseFloat(document.getElementById('winching').value) || 0;
-
-            // Additional services charge ($20 each)
+            
+            // Additional services, each with a +$20 charge
             let additionalServices = 0;
-            let serviceIds = ['missingWheels', 'brokenBallJoint', 'brokenTireRod', 'stuckInPark', 'noKeys'];
-            serviceIds.forEach(id => {
-                if (document.getElementById(id).checked) additionalServices += 20;
-            });
-
-            let startingPoint = document.getElementById('startingPoint').value;
-            let destination = document.getElementById('destination').value;
-
-            if (!startingPoint || !destination) {
-                alert("Please enter both starting point and destination.");
-                return;
-            }
-
-            // Use Google Maps API to calculate distance
-            let directionsService = new google.maps.DirectionsService();
-            let request = {
-                origin: startingPoint,
-                destination: destination,
-                travelMode: google.maps.TravelMode.DRIVING
-            };
-
-            directionsService.route(request, function(result, status) {
-                if (status === google.maps.DirectionsStatus.OK) {
-                    let distanceInMiles = result.routes[0].legs[0].distance.value / 1609.34; // Convert meters to miles
-                    let totalCost = baseFee + (distanceInMiles * ratePerMile) + afterHours + winching + additionalServices;
-                    document.getElementById('result').innerText = `Total Charge: $${totalCost.toFixed(2)} (Distance: ${distanceInMiles.toFixed(2)} miles)`;
-                } else {
-                    alert("Could not calculate the route. Please check the entered addresses.");
-                }
-            });
+            if (document.getElementById('missingWheels').checked) additionalServices += 20;
+            if (document.getElementById('brokenBallJoint').checked) additionalServices += 20;
+            if (document.getElementById('brokenTireRod').checked) additionalServices += 20;
+            if (document.getElementById('stuckInPark').checked) additionalServices += 20;
+            if (document.getElementById('noKeys').checked) additionalServices += 20;
+            
+            let totalCost = baseFee + (mileage * ratePerMile) + afterHours + winching + additionalServices;
+            
+            document.getElementById('result').innerText = `Total Charge: $${totalCost.toFixed(2)}`;
         }
     </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3jbPFpYYeXJnAtI5zuC1oVEHwzyq12n8&libraries=places" async defer onload="initializeAutocomplete()"></script>
 </body>
 </html>
