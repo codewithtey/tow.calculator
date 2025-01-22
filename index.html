@@ -75,8 +75,10 @@
                         let miles = parseFloat(distanceText.replace(/[^\d.]/g, "")); // Extract number from string
                         if (!isNaN(miles)) {
                             mileageField.value = miles.toFixed(1);
+                            console.log(`Distance Calculated: ${miles.toFixed(1)} miles`);
                         } else {
                             mileageField.value = "0";
+                            console.warn("Distance response invalid");
                         }
                     } else {
                         console.error("Error calculating distance:", status, response);
