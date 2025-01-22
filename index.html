@@ -11,10 +11,7 @@
         button { padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
         button:hover { background: #0056b3; }
         #result { margin-top: 20px; font-weight: bold; }
-        .checkbox-group label { display: flex; align-items: center; font-size: 14px; }
-        .checkbox-group input { width: auto; margin-right: 10px; }
         input[readonly] { background: #f0f0f0; cursor: not-allowed; }
-        h3 { margin-top: 15px; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -42,35 +39,33 @@
         <label for="winching">Winching/Recovery Fee ($):</label>
         <input type="number" id="winching" value="0">
 
-        <h3>Additional Services (Each at $20):</h3>
-        <div class="checkbox-group">
-            <label><input type="checkbox" class="extra-service" value="20"> My Vehicle is Missing Wheel(s) (+$20)</label>
-            <label><input type="checkbox" class="extra-service" value="20"> My Vehicle has a Broken Ball Joint (+$20)</label>
-            <label><input type="checkbox" class="extra-service" value="20"> My Vehicle has a Broken Tire Rod (+$20)</label>
-            <label><input type="checkbox" class="extra-service" value="20"> My Vehicle is Stuck In Park (+$20)</label>
-            <label><input type="checkbox" class="extra-service" value="20"> I have No Keys with Vehicle (+$20)</label>
-        </div>
-
         <button onclick="calculateCharge()">Calculate</button>
 
         <div id="result"></div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        function initializeAutocomplete() {
             let pickupInput = document.getElementById("pickupAddress");
             let dropoffInput = document.getElementById("dropoffAddress");
+
+            new google.maps.places.Autocomplete(pickupInput);
+            new google.maps.places.Autocomplete(dropoffInput);
+
+            dropoffInput.addEventListener("change", calculateMiles);
+        }
+
+        function calculateMiles() {
+            let pickup = document.getElementById("pickupAddress").value;
+            let dropoff = document.getElementById("dropoffAddress").value;
             let mileageField = document.getElementById("mileage");
 
-            let autocompletePickup = new google.maps.places.Autocomplete(pickupInput);
-            let autocompleteDropoff = new google.maps.places.Autocomplete(dropoffInput);
-
-            autocompleteDropoff.addListener('place_changed', function () {
+            if (pickup && dropoff) {
                 let service = new google.maps.DistanceMatrixService();
                 service.getDistanceMatrix(
                     {
-                        origins: [pickupInput.value],
-                        destinations: [dropoffInput.value],
+                        origins: [pickup],
+                        destinations: [dropoff],
                         travelMode: 'DRIVING',
                     }, function (response, status) {
                         if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
@@ -81,8 +76,8 @@
                         }
                     }
                 );
-            });
-        });
+            }
+        }
 
         function calculateCharge() {
             let baseFee = parseFloat(document.getElementById('baseFee').value) || 0;
@@ -91,15 +86,12 @@
             let afterHours = parseFloat(document.getElementById('afterHours').value) || 0;
             let winching = parseFloat(document.getElementById('winching').value) || 0;
 
-            let extraServices = document.querySelectorAll('.extra-service:checked');
-            let extraCost = extraServices.length * 20;
-
-            let totalCost = baseFee + (mileage * ratePerMile) + afterHours + winching + extraCost;
+            let totalCost = baseFee + (mileage * ratePerMile) + afterHours + winching;
 
             document.getElementById('result').innerText = `Total Charge: $${totalCost.toFixed(2)}`;
         }
     </script>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3jbPFpYYeXJnAtI5zuC1oVEHwzyq12n8&callback=initMap&libraries=places" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3jbPFpYYeXJnAtI5zuC1oVEHwzyq12n8&libraries=places" async defer onload="initializeAutocomplete()"></script>
 </body>
 </html>
