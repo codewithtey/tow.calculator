@@ -45,12 +45,16 @@
     </div>
 
     <script>
+        let distanceService;
+
         function initializeAutocomplete() {
             let pickupInput = document.getElementById("pickupAddress");
             let dropoffInput = document.getElementById("dropoffAddress");
 
             new google.maps.places.Autocomplete(pickupInput);
             new google.maps.places.Autocomplete(dropoffInput);
+
+            distanceService = new google.maps.DistanceMatrixService();
 
             dropoffInput.addEventListener("change", calculateMiles);
         }
@@ -61,21 +65,24 @@
             let mileageField = document.getElementById("mileage");
 
             if (pickup && dropoff) {
-                let service = new google.maps.DistanceMatrixService();
-                service.getDistanceMatrix(
-                    {
-                        origins: [pickup],
-                        destinations: [dropoff],
-                        travelMode: 'DRIVING',
-                    }, function (response, status) {
-                        if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
-                            let miles = parseFloat(response.rows[0].elements[0].distance.text.replace(/[^0-9.]/g, ""));
-                            mileageField.value = miles;
+                distanceService.getDistanceMatrix({
+                    origins: [pickup],
+                    destinations: [dropoff],
+                    travelMode: 'DRIVING',
+                }, function(response, status) {
+                    if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
+                        let distanceText = response.rows[0].elements[0].distance.text;
+                        let miles = parseFloat(distanceText.replace(/[^\d.]/g, "")); // Extract number from string
+                        if (!isNaN(miles)) {
+                            mileageField.value = miles.toFixed(1);
                         } else {
-                            mileageField.value = 0;
+                            mileageField.value = "0";
                         }
+                    } else {
+                        console.error("Error calculating distance:", status, response);
+                        mileageField.value = "0";
                     }
-                );
+                });
             }
         }
 
