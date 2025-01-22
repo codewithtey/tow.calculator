@@ -1,36 +1,171 @@
-<!-- PayPal Donation Button -->
-<div class="donation">
-    <label for="donation">Donation Amount ($):</label>
-    <input type="number" id="donation" value="0" placeholder="Optional donation amount">
-    <div id="paypal-button-container">
-        <!-- PayPal button will appear here -->
-    </div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tow Truck Charge Calculator</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-<script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&currency=USD"></script>
-<script>
-    function renderPayPalButton(donationAmount) {
-        paypal.Buttons({
-            createOrder: function(data, actions) {
-                return actions.order.create({
-                    purchase_units: [{
-                        amount: {
-                            value: donationAmount.toFixed(2)
-                        }
-                    }]
-                });
-            },
-            onApprove: function(data, actions) {
-                return actions.order.capture().then(function(details) {
-                    alert("Donation Successful! Thank you, " + details.payer.name.given_name);
-                });
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 380px; /* Reduced max width for compactness */
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        h3 {
+            font-size: 1rem;
+            color: #333;
+            margin-top: 10px;
+            font-weight: normal;
+        }
+
+        .checkbox-label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+                max-width: 100%;
             }
-        }).render('#paypal-button-container');
-    }
 
-    // Calculate donation and render PayPal button
-    document.getElementById('donation').addEventListener('input', function() {
-        let donationAmount = parseFloat(this.value) || 0;
-        renderPayPalButton(donationAmount);
-    });
-</script>
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            label {
+                font-size: 0.9rem;
+            }
+
+            input[type="number"] {
+                font-size: 1rem;
+            }
+
+            button {
+                font-size: 1.1rem;
+            }
+
+            #result {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Tow Truck Charge Calculator</h2>
+
+        <label for="mileage">Miles Towed:</label>
+        <input type="number" id="mileage" value="10" placeholder="Enter miles towed">
+
+        <label for="baseFee">Base Hook-up Fee ($):</label>
+        <input type="number" id="baseFee" value="75">
+
+        <label for="ratePerMile">Rate per Mile ($):</label>
+        <input type="number" id="ratePerMile" value="5">
+
+        <label for="afterHours">After-Hours Fee ($):</label>
+        <input type="number" id="afterHours" value="0">
+
+        <label for="winching">Winching/Recovery Fee ($):</label>
+        <input type="number" id="winching" value="0">
+
+        <h3>Additional Services (Each +$20.00)</h3>
+        <label class="checkbox-label"><input type="checkbox" id="missingWheels"> My Vehicle is Missing Wheel(s)</label>
+        <label class="checkbox-label"><input type="checkbox" id="brokenBallJoint"> My Vehicle has a Broken Ball Joint</label>
+        <label class="checkbox-label"><input type="checkbox" id="brokenTireRod"> My Vehicle has a Broken Tire Rod</label>
+        <label class="checkbox-label"><input type="checkbox" id="stuckInPark"> My Vehicle is Stuck in Park</label>
+        <label class="checkbox-label"><input type="checkbox" id="noKeys"> I have No Keys with Vehicle</label>
+
+        <button onclick="calculateCharge()">Calculate</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function calculateCharge() {
+            let baseFee = parseFloat(document.getElementById('baseFee').value) || 0;
+            let mileage = parseFloat(document.getElementById('mileage').value) || 0;
+            let ratePerMile = parseFloat(document.getElementById('ratePerMile').value) || 0;
+            let afterHours = parseFloat(document.getElementById('afterHours').value) || 0;
+            let winching = parseFloat(document.getElementById('winching').value) || 0;
+            
+            // Additional services, each with a +$20 charge
+            let additionalServices = 0;
+            if (document.getElementById('missingWheels').checked) additionalServices += 20;
+            if (document.getElementById('brokenBallJoint').checked) additionalServices += 20;
+            if (document.getElementById('brokenTireRod').checked) additionalServices += 20;
+            if (document.getElementById('stuckInPark').checked) additionalServices += 20;
+            if (document.getElementById('noKeys').checked) additionalServices += 20;
+            
+            let totalCost = baseFee + (mileage * ratePerMile) + afterHours + winching + additionalServices;
+            
+            document.getElementById('result').innerText = `Total Charge: $${totalCost.toFixed(2)}`;
+        }
+    </script>
+</body>
+</html>
