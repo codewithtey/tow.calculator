@@ -79,6 +79,14 @@
             background-color: #0056b3;
         }
 
+        .reset-button {
+            background-color: #dc3545;
+        }
+
+        .reset-button:hover {
+            background-color: #c82333;
+        }
+
         #result {
             margin-top: 20px;
             font-size: 1.2rem;
@@ -148,6 +156,7 @@
         <label class="checkbox-label"><input type="checkbox" id="noKeys" aria-labelledby="form-title"> I have No Keys with Vehicle</label>
 
         <button onclick="calculateCharge()">Calculate</button>
+        <button class="reset-button" onclick="resetForm()">Reset</button>
 
         <div id="result" role="status" aria-live="polite"></div>
     </div>
@@ -208,7 +217,24 @@
             
             document.getElementById('result').innerText = `Total Charge: $${totalCost.toFixed(2)}`;
         }
+
+        function resetForm() {
+            document.getElementById('pickup').value = '';
+            document.getElementById('dropoff').value = '';
+            document.getElementById('mileage').value = '10';
+            document.getElementById('baseFee').value = '75';
+            document.getElementById('ratePerMile').value = '5';
+            document.getElementById('afterHours').value = '0';
+            document.getElementById('winching').value = '0';
+            document.getElementById('missingWheels').checked = false;
+            document.getElementById('brokenBallJoint').checked = false;
+            document.getElementById('brokenTireRod').checked = false;
+            document.getElementById('stuckInPark').checked = false;
+            document.getElementById('noKeys').checked = false;
+            document.getElementById('result').innerText = '';
+        }
     </script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3jbPFpYYeXJnAtI5zuC1oVEHwzyq12n8&libraries=places&callback=initMap"></script>
+    <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="codewithtey" data-description="Support me on Buy me a coffee!" data-message="Thank you for buying me coffee!" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
 </body>
 </html>
