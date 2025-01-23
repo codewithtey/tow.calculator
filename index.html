@@ -23,7 +23,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 380px; /* Reduced max width for compactness */
+            max-width: 380px;
             box-sizing: border-box;
             text-align: center;
         }
@@ -116,53 +116,56 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Tow Truck Charge Calculator</h2>
+    <div class="container" role="form">
+        <h2 id="form-title">Tow Truck Charge Calculator</h2>
 
         <label for="mileage">Miles Towed:</label>
-        <input type="number" id="mileage" value="10" placeholder="Enter miles towed">
+        <input type="number" id="mileage" aria-labelledby="form-title" value="10" placeholder="Enter miles towed">
 
         <label for="baseFee">Base Hook-up Fee ($):</label>
-        <input type="number" id="baseFee" value="75">
+        <input type="number" id="baseFee" aria-labelledby="form-title" value="75">
 
         <label for="ratePerMile">Rate per Mile ($):</label>
-        <input type="number" id="ratePerMile" value="5">
+        <input type="number" id="ratePerMile" aria-labelledby="form-title" value="5">
 
         <label for="afterHours">After-Hours Fee ($):</label>
-        <input type="number" id="afterHours" value="0">
+        <input type="number" id="afterHours" aria-labelledby="form-title" value="0">
 
         <label for="winching">Winching/Recovery Fee ($):</label>
-        <input type="number" id="winching" value="0">
+        <input type="number" id="winching" aria-labelledby="form-title" value="0">
 
         <h3>Additional Services (Each +$20.00)</h3>
-        <label class="checkbox-label"><input type="checkbox" id="missingWheels"> My Vehicle is Missing Wheel(s)</label>
-        <label class="checkbox-label"><input type="checkbox" id="brokenBallJoint"> My Vehicle has a Broken Ball Joint</label>
-        <label class="checkbox-label"><input type="checkbox" id="brokenTireRod"> My Vehicle has a Broken Tire Rod</label>
-        <label class="checkbox-label"><input type="checkbox" id="stuckInPark"> My Vehicle is Stuck in Park</label>
-        <label class="checkbox-label"><input type="checkbox" id="noKeys"> I have No Keys with Vehicle</label>
+        <label class="checkbox-label"><input type="checkbox" id="missingWheels" aria-labelledby="form-title"> My Vehicle is Missing Wheel(s)</label>
+        <label class="checkbox-label"><input type="checkbox" id="brokenBallJoint" aria-labelledby="form-title"> My Vehicle has a Broken Ball Joint</label>
+        <label class="checkbox-label"><input type="checkbox" id="brokenTireRod" aria-labelledby="form-title"> My Vehicle has a Broken Tire Rod</label>
+        <label class="checkbox-label"><input type="checkbox" id="stuckInPark" aria-labelledby="form-title"> My Vehicle is Stuck in Park</label>
+        <label class="checkbox-label"><input type="checkbox" id="noKeys" aria-labelledby="form-title"> I have No Keys with Vehicle</label>
 
         <button onclick="calculateCharge()">Calculate</button>
 
-        <div id="result"></div>
+        <div id="result" role="status" aria-live="polite"></div>
     </div>
 
     <script>
+        function getInputValue(id) {
+            return parseFloat(document.getElementById(id).value) || 0;
+        }
+
         function calculateCharge() {
-            let baseFee = parseFloat(document.getElementById('baseFee').value) || 0;
-            let mileage = parseFloat(document.getElementById('mileage').value) || 0;
-            let ratePerMile = parseFloat(document.getElementById('ratePerMile').value) || 0;
-            let afterHours = parseFloat(document.getElementById('afterHours').value) || 0;
-            let winching = parseFloat(document.getElementById('winching').value) || 0;
+            const baseFee = getInputValue('baseFee');
+            const mileage = getInputValue('mileage');
+            const ratePerMile = getInputValue('ratePerMile');
+            const afterHours = getInputValue('afterHours');
+            const winching = getInputValue('winching');
             
             // Additional services, each with a +$20 charge
             let additionalServices = 0;
-            if (document.getElementById('missingWheels').checked) additionalServices += 20;
-            if (document.getElementById('brokenBallJoint').checked) additionalServices += 20;
-            if (document.getElementById('brokenTireRod').checked) additionalServices += 20;
-            if (document.getElementById('stuckInPark').checked) additionalServices += 20;
-            if (document.getElementById('noKeys').checked) additionalServices += 20;
+            const additionalServiceIds = ['missingWheels', 'brokenBallJoint', 'brokenTireRod', 'stuckInPark', 'noKeys'];
+            additionalServiceIds.forEach(id => {
+                if (document.getElementById(id).checked) additionalServices += 20;
+            });
             
-            let totalCost = baseFee + (mileage * ratePerMile) + afterHours + winching + additionalServices;
+            const totalCost = baseFee + (mileage * ratePerMile) + afterHours + winching + additionalServices;
             
             document.getElementById('result').innerText = `Total Charge: $${totalCost.toFixed(2)}`;
         }
