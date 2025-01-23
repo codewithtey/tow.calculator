@@ -65,8 +65,14 @@
             margin-bottom: 8px;
         }
 
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
         button {
-            width: 100%;
+            flex: 1;
             padding: 12px;
             background-color: #007bff;
             color: white;
@@ -75,7 +81,7 @@
             font-size: 1.1rem;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            margin-top: 15px;
+            margin: 5px;
         }
 
         button:hover {
@@ -88,6 +94,22 @@
 
         .reset-button:hover {
             background-color: #c82333;
+        }
+
+        .email-button {
+            background-color: #28a745;
+        }
+
+        .email-button:hover {
+            background-color: #218838;
+        }
+
+        .text-button {
+            background-color: #17a2b8;
+        }
+
+        .text-button:hover {
+            background-color: #138496;
         }
 
         #result {
@@ -195,8 +217,15 @@
         <label class="checkbox-label"><input type="checkbox" id="stuckInPark" aria-labelledby="form-title"> My Vehicle is Stuck in Park</label>
         <label class="checkbox-label"><input type="checkbox" id="noKeys" aria-labelledby="form-title"> I have No Keys with Vehicle</label>
 
-        <button onclick="calculateCharge()">Calculate</button>
-        <button class="reset-button" onclick="resetForm()">Reset</button>
+        <div class="button-container">
+            <button onclick="calculateCharge()">Calculate</button>
+            <button class="reset-button" onclick="resetForm()">Reset</button>
+        </div>
+        
+        <div class="button-container">
+            <button class="email-button" onclick="emailQuote()">Email Quote</button>
+            <button class="text-button" onclick="textQuote()">Text Quote</button>
+        </div>
 
         <div id="result" role="status" aria-live="polite"></div>
     </div>
@@ -272,6 +301,24 @@
             document.getElementById('stuckInPark').checked = false;
             document.getElementById('noKeys').checked = false;
             document.getElementById('result').innerText = '';
+        }
+
+        function emailQuote() {
+            const result = document.getElementById('result').innerText;
+            const email = prompt("Please enter the customer's email address:");
+            if (email) {
+                // Here you can implement the actual emailing functionality, for now we just alert
+                alert(`Quote: ${result}\nSent to: ${email}`);
+            }
+        }
+
+        function textQuote() {
+            const result = document.getElementById('result').innerText;
+            const phoneNumber = prompt("Please enter the customer's phone number:");
+            if (phoneNumber) {
+                // Here you can implement the actual texting functionality, for now we just alert
+                alert(`Quote: ${result}\nSent to: ${phoneNumber}`);
+            }
         }
 
         // Set all number fields to zero on initial visit
