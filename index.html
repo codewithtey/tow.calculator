@@ -40,7 +40,7 @@
             margin-bottom: 5px;
         }
 
-        input[type="number"] {
+        input[type="number"], input[type="text"] {
             width: 100%;
             padding: 10px;
             margin: 8px 0;
@@ -119,20 +119,26 @@
     <div class="container" role="form">
         <h2 id="form-title">Tow Truck Charge Calculator</h2>
 
+        <label for="pickup">Pickup Address:</label>
+        <input type="text" id="pickup" placeholder="Enter pickup address">
+
+        <label for="dropoff">Drop Off Address:</label>
+        <input type="text" id="dropoff" placeholder="Enter drop off address">
+
         <label for="mileage">Miles Towed:</label>
-        <input type="number" id="mileage" aria-labelledby="form-title" value="10" placeholder="Enter miles towed">
+        <input type="number" id="mileage" value="10" placeholder="Enter miles towed" readonly>
 
         <label for="baseFee">Base Hook-up Fee ($):</label>
-        <input type="number" id="baseFee" aria-labelledby="form-title" value="75">
+        <input type="number" id="baseFee" value="75">
 
         <label for="ratePerMile">Rate per Mile ($):</label>
-        <input type="number" id="ratePerMile" aria-labelledby="form-title" value="5">
+        <input type="number" id="ratePerMile" value="5">
 
         <label for="afterHours">After-Hours Fee ($):</label>
-        <input type="number" id="afterHours" aria-labelledby="form-title" value="0">
+        <input type="number" id="afterHours" value="0">
 
         <label for="winching">Winching/Recovery Fee ($):</label>
-        <input type="number" id="winching" aria-labelledby="form-title" value="0">
+        <input type="number" id="winching" value="0">
 
         <h3>Additional Services (Each +$20.00)</h3>
         <label class="checkbox-label"><input type="checkbox" id="missingWheels" aria-labelledby="form-title"> My Vehicle is Missing Wheel(s)</label>
@@ -147,6 +153,39 @@
     </div>
 
     <script>
+        let autocompletePickup, autocompleteDropoff, distanceService;
+
+        function initMap() {
+            // Initialize the Google Maps Autocomplete and Distance Matrix Services
+            autocompletePickup = new google.maps.places.Autocomplete(document.getElementById('pickup'));
+            autocompleteDropoff = new google.maps.places.Autocomplete(document.getElementById('dropoff'));
+            distanceService = new google.maps.DistanceMatrixService();
+
+            autocompletePickup.addListener('place_changed', calculateDistance);
+            autocompleteDropoff.addListener('place_changed', calculateDistance);
+        }
+
+        function calculateDistance() {
+            const pickup = document.getElementById('pickup').value;
+            const dropoff = document.getElementById('dropoff').value;
+
+            if (pickup && dropoff) {
+                distanceService.getDistanceMatrix({
+                    origins: [pickup],
+                    destinations: [dropoff],
+                    travelMode: google.maps.TravelMode.DRIVING,
+                    unitSystem: google.maps.UnitSystem.IMPERIAL
+                }, (response, status) => {
+                    if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
+                        const distance = response.rows[0].elements[0].distance.value / 1609.34; // Convert meters to miles
+                        document.getElementById('mileage').value = distance.toFixed(2);
+                    } else {
+                        alert('Error calculating distance. Please try again.');
+                    }
+                });
+            }
+        }
+
         function getInputValue(id) {
             return parseFloat(document.getElementById(id).value) || 0;
         }
@@ -170,6 +209,6 @@
             document.getElementById('result').innerText = `Total Charge: $${totalCost.toFixed(2)}`;
         }
     </script>
-    <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="codewithtey" data-description="Support me on Buy me a coffee!" data-message="Thank you for buying me coffee!" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3jbPFpYYeXJnAtI5zuC1oVEHwzyq12n8&libraries=places&callback=initMap"></script>
 </body>
 </html>
