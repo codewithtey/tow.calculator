@@ -134,13 +134,13 @@
         <input type="text" id="dropoff" placeholder="Enter drop off address">
 
         <label for="mileage">Miles Towed:</label>
-        <input type="number" id="mileage" value="10" placeholder="Enter miles towed" readonly>
+        <input type="number" id="mileage" value="0" placeholder="Enter miles towed" readonly>
 
         <label for="baseFee">Base Hook-up Fee ($):</label>
-        <input type="number" id="baseFee" value="75">
+        <input type="number" id="baseFee" value="0">
 
         <label for="ratePerMile">Rate per Mile ($):</label>
-        <input type="number" id="ratePerMile" value="5">
+        <input type="number" id="ratePerMile" value="0">
 
         <label for="afterHours">After-Hours Fee ($):</label>
         <input type="number" id="afterHours" value="0">
@@ -221,9 +221,9 @@
         function resetForm() {
             document.getElementById('pickup').value = '';
             document.getElementById('dropoff').value = '';
-            document.getElementById('mileage').value = '10';
-            document.getElementById('baseFee').value = '75';
-            document.getElementById('ratePerMile').value = '5';
+            document.getElementById('mileage').value = '0';
+            document.getElementById('baseFee').value = '0';
+            document.getElementById('ratePerMile').value = '0';
             document.getElementById('afterHours').value = '0';
             document.getElementById('winching').value = '0';
             document.getElementById('missingWheels').checked = false;
@@ -233,6 +233,15 @@
             document.getElementById('noKeys').checked = false;
             document.getElementById('result').innerText = '';
         }
+
+        // Set all number fields to zero on initial visit
+        window.onload = function() {
+            document.getElementById('mileage').value = '0';
+            document.getElementById('baseFee').value = '0';
+            document.getElementById('ratePerMile').value = '0';
+            document.getElementById('afterHours').value = '0';
+            document.getElementById('winching').value = '0';
+        };
     </script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3jbPFpYYeXJnAtI5zuC1oVEHwzyq12n8&libraries=places&callback=initMap"></script>
     <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="codewithtey" data-description="Support me on Buy me a coffee!" data-message="Thank you for buying me coffee!" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
